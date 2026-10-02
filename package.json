@@ -1,0 +1,56 @@
+{
+  "name": "dsh-tool-protobuf",
+  "version": "0.1.0",
+  "description": "Read, audit and diff Protocol Buffer definitions from chat — no protoc install required.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/**/*.js",
+    "lib/**/*.mjs",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh-plugin",
+    "dsh-category-tool",
+    "deepseek-harness",
+    "protobuf",
+    "grpc",
+    "proto",
+    "schema",
+    "api-compatibility"
+  ],
+  "author": "yuehancn",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuehancn/dsh-tool-protobuf.git"
+  },
+  "homepage": "https://github.com/yuehancn/dsh-tool-protobuf#readme",
+  "bugs": {
+    "url": "https://github.com/yuehancn/dsh-tool-protobuf/issues"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "dsh": ">=0.2.0-rc.2"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-tools": ">=0.2.0-rc.2"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.18.4"
+  },
+  "scripts": {
+    "test": "node _test/run-all.mjs"
+  }
+}

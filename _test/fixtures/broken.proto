@@ -1,0 +1,42 @@
+// Deliberately broken. Every construct here is something protoc would reject
+// or a reviewer would flag, and the audit tool must report each one.
+syntax = "proto3";
+
+package broken.v1;
+
+message Dup {
+  string a = 1;
+  string b = 1;
+  int32 c = 19005;
+  string d = 0;
+  string e = 536870912;
+}
+
+message ReservedClash {
+  string ok = 1;
+  string bad = 5;
+  reserved 5, 6;
+  reserved "gone";
+  string also_bad = 7;
+  string gone = 8;
+}
+
+message BadMap {
+  map<bytes, string> nope = 1;
+  map<string, MissingType> dangling = 2;
+}
+
+message Gappy {
+  string first = 1;
+  string third = 3;
+}
+
+enum NoZero {
+  NO_ZERO_A = 1;
+  NO_ZERO_B = 2;
+}
+
+enum Aliased {
+  ALIASED_A = 0;
+  ALIASED_B = 0;
+}

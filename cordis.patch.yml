@@ -1,0 +1,16 @@
+# The dsh-tool-protobuf bundle patch: one insert adding the protobuf tool suite.
+#
+# The tool suite is self-contained — the only configuration is where it is
+# allowed to read .proto files from, and that is per-profile:
+#
+#   - id: tool-protobuf
+#     config:
+#       workDir: C:/work/my-service/proto
+#       maxBytes: 8388608
+#
+# `workDir` is a hard boundary, not a hint: a path that tries to escape it
+# (absolute paths, drive letters, `..`) is rejected rather than resolved.
+
+- insert:
+    - id: tool-protobuf
+      name: dsh-tool-protobuf

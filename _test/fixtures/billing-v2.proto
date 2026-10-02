@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package acme.billing.v1;
+
+// Version 2 of the billing definition. Every edit here is deliberate and
+// corresponds to one finding the diff tool must produce:
+//
+//   breaking  LineItem.amount_minor (2) retyped int64 -> string
+//   breaking  Invoice.invoice_number reuses number 1 (was invoice_id)
+//   breaking  Invoice.total_minor kept its name but moved 9 -> 30
+//   breaking  Invoice.line_items_summary reuses number 9 (was total_minor)
+//   breaking  Invoice.currency_display moved 10 -> 20 without reserving 10
+//   breaking  Invoice.customer_detail added at 14, which v1 reserved
+//   risky     Invoice.due_at removed; number 6 is reserved
+//   additive  Invoice.paid_at is brand new at 16
+//
+message LineItem {
+  string description = 1;
+  string amount_minor = 2;
+  string currency = 3;
+  int32 quantity = 4;
+  int32 tax_rate_bps = 5;
+  string unit_price_ref = 6;
+  // Renamed rather than moved; the number is reserved so nothing reuses it.
+  int32 discount_bps = 7;
+  reserved 8;
+}
+
+message Customer {
+  string customer_id = 1;
+  string display_name = 2;
+  string email = 3;
+  Address billing_address = 4;
+
+  message Address {
+    string line1 = 1;
+    string line2 = 2;
+    string city = 3;
+    string postal_code = 4;
+    string country_code = 5;
+    string region = 6;
+  }
+}
+
+enum InvoiceStatus {
+  INVOICE_STATUS_UNSPECIFIED = 0;
+  INVOICE_STATUS_DRAFT = 1;
+  INVOICE_STATUS_ISSUED = 2;
+  INVOICE_STATUS_PAID = 3;
+  INVOICE_STATUS_VOID = 4;
+  INVOICE_STATUS_CREDITED = 5;
+}
+
+enum PaymentState {
+  PAYMENT_STATE_UNSPECIFIED = 0;
+  PAYMENT_STATE_PENDING = 1;
+  PAYMENT_STATE_SETTLED = 2;
+  PAYMENT_STATE_FAILED = 3;
+}
+
+message Invoice {
+  string invoice_number = 1;
+  string customer_id = 2;
+  InvoiceStatus status = 3;
+  PaymentState payment_state = 4;
+  int64 issued_at_epoch = 5;
+  repeated LineItem line_items = 7;
+  Customer customer = 8;
+  string line_items_summary = 9;
+  string currency_display = 20;
+  map<string, string> labels = 11;
+  oneof delivery {
+    string pdf_url = 12;
+    string hosted_url = 13;
+  }
+  string customer_detail = 14;
+  int64 paid_at_epoch = 16;
+  // Same name as v1, different number: the wire format is keyed by number, so
+  // old data no longer decodes into this field even though the name matches.
+  int64 total_minor = 30;
+  reserved 6, 15;
+  reserved "legacy_vat_number";
+}
+
+message GetInvoiceRequest {
+  string invoice_id = 1;
+}
+
+message GetInvoiceResponse {
+  Invoice invoice = 1;
+}
+
+message ListInvoicesRequest {
+  string customer_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListInvoicesResponse {
+  repeated Invoice invoices = 1;
+  string next_page_token = 2;
+}
+
+service BillingService {
+  rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
+  rpc ListInvoices(ListInvoicesRequest) returns (stream ListInvoicesResponse);
+  rpc UploadReconciliation(stream LineItem) returns (GetInvoiceResponse);
+  rpc Reconcile(stream LineItem) returns (stream ListInvoicesResponse);
+  rpc VoidInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
+}

@@ -1,0 +1,32 @@
+// A proto2 definition with legitimately tricky constructs, used to check that
+// the parser handles the older grammar rather than only proto3.
+syntax = "proto2";
+
+package legacy.v1;
+
+message Payment {
+  required string payment_id = 1;
+  optional int64 amount_minor = 2 [default = 0];
+  optional string memo = 3;
+  repeated string tags = 4;
+  optional Type type = 5 [default = TYPE_CARD];
+
+  enum Type {
+    TYPE_CARD = 0;
+    TYPE_BANK_TRANSFER = 1;
+  }
+
+  extensions 100 to 199;
+  extensions 500 to max;
+}
+
+extend Payment {
+  optional string external_ref = 100;
+}
+
+message Refund {
+  required string refund_id = 1;
+  optional Payment original = 2;
+  // 3 was a removed field
+  optional int64 refunded_minor = 4;
+}
